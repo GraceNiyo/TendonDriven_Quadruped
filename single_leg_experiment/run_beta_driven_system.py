@@ -16,7 +16,7 @@ import compute_ground_reaction_force as compute_grf
 
 # --- Configuration Parameters ---
 path_to_model = '../Working_Folder/single_leg_experiment/single_leg.xml'
-base_data_dir = '../all_data/single_leg_experiment/Simulation_07_31_2025/beta_drive/'
+base_data_dir = '../all_data/single_leg_experiment/Simulation_09_15_2025/5kg_Data/'
 os.makedirs(base_data_dir, exist_ok=True)
 
 # Muscle activation levels (M0, M1, M2)
@@ -31,11 +31,11 @@ all_simulation_results = []
 
 # durations for each new phase
 phase_durations = [
-    2.0, # Phase 1: Only muscle activation, no external force (0 to 2s)
+    3.0, # Phase 1: Only muscle activation, no external force (0 to 2s)
     # 3.0, # Phase 2: Muscle activation + Ia feedback, no external force (2 to 5s)
     1.0, # Phase 3: Muscle activation + Ia feedback + external force (the pulse) (5 to 6s)
-    2.0, # Phase 4: Muscle activation + Ia feedback, no external force (6 to 9s)
-    2.0  # Phase 5: Only muscle activation, no external force (9 to 11s)
+    3.0, # Phase 4: Muscle activation + Ia feedback, no external force (6 to 9s)
+    # 2.0  # Phase 5: Only muscle activation, no external force (9 to 11s)
 ]
 
 
@@ -45,7 +45,7 @@ total_sim_duration = cumulative_times[-1]
 
 
 # Apply force from 0 N down to -10 N (in z-direction)
-force_vector = np.arange(0,-2.2,-0.2)
+force_vector = np.arange(0,-15.1,-0.1)
 
 
 # --- Model Loading and Initialization ---
@@ -103,7 +103,7 @@ with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui
         applied_force = np.zeros(3)  # Initialize applied force
 
         force_values = generate_smooth_force_profile(
-            duration=phase_durations[2],  # Duration of the force pulse
+            duration=phase_durations[1],  # Duration of the force pulse
             timestep=model.opt.timestep,
             rise_time=0.1,  # Time to reach peak force
             decay_time=0.1,  # Time to decay to zero force
@@ -195,7 +195,8 @@ with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui
                 data.ctrl[:] = np.clip(muscle_activations + Ia_a + II_a, 0, 1)
                 mujoco.mj_applyFT(model, data, applied_force, torque, force_location_on_model, body_id, data.qfrc_applied)
 
-            elif current_sim_time_relative < cumulative_times[2]: 
+            else: 
+                # current_sim_time_relative < cumulative_times[2]: 
                 # Muscle activation + Ia feedback, no external force
                 for m in range(model.nu): # Calculate Ia feedback using the spindle model
                     
@@ -216,10 +217,12 @@ with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui
                 beta_signal = np.clip(muscle_activations + Ia_a + II_a, 0, 1)  
                 data.ctrl[:] =   np.clip(muscle_activations + Ia_a + II_a, 0, 1)
                 data.qfrc_applied[:] = 0.0 # No external force
+                applied_force = np.zeros(3)
 
-            else: # Only muscle activation, no external force
-                data.ctrl[:] = muscle_activations
-                data.qfrc_applied[:] = 0.0
+            # else: # Only muscle activation, no external force
+            #     data.ctrl[:] = muscle_activations
+            #     data.qfrc_applied[:] = 0.0
+            #     applied_force = np.zeros(3)
 
             # --- Update the model and data ---
 
