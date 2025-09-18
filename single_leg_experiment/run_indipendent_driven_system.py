@@ -16,7 +16,7 @@ import compute_ground_reaction_force as compute_grf
 
 # --- Configuration Parameters ---
 path_to_model = '../Working_Folder/single_leg_experiment/single_leg.xml'
-base_data_dir = '../all_data/single_leg_experiment/Simulation_09_15_2025/5kg_Data/'
+base_data_dir = '../all_data/single_leg_experiment/Simulation_09_15_2025/1kg_Data/'
 os.makedirs(base_data_dir, exist_ok=True)
 
 # Muscle activation levels (M0, M1, M2)
@@ -47,7 +47,7 @@ total_sim_duration = cumulative_times[-1]
 
 
 # Apply force from 0 N down to -10 N (in z-direction)
-force_vector = np.arange(-6.0,-7.6,-0.1)
+force_vector = np.arange(-2.4,-3.1,-0.1)
 
 
 # --- Model Loading and Initialization ---

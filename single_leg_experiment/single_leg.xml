@@ -1,6 +1,6 @@
 <mujoco model="monopod model">
   <!-- defaults -->
-  <compiler angle="radian" settotalmass="5"/>
+  <compiler angle="radian" settotalmass="1"/>
 
   <option timestep="0.001" integrator="implicitfast" gravity = "0 0 -9.81"/>
 
