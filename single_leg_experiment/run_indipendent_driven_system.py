@@ -47,7 +47,7 @@ total_sim_duration = cumulative_times[-1]
 
 
 # Apply force from 0 N down to -10 N (in z-direction)
-force_vector = np.arange(-2.4,-3.1,-0.1)
+force_vector = np.arange(-3,-3.1,-0.1)
 
 
 # --- Model Loading and Initialization ---
