@@ -16,8 +16,8 @@ import compute_ground_reaction_force as compute_grf
 
 # --- Configuration Parameters ---
 path_to_model = '../Working_Folder/single_leg_experiment/single_leg.xml'
-base_data_dir = '../all_data/single_leg_experiment/Simulation_09_15_2025/5kg_Data/'
-os.makedirs(base_data_dir, exist_ok=True)
+# base_data_dir = '../all_data/single_leg_experiment/Simulation_09_15_2025/Test_Data/'
+# os.makedirs(base_data_dir, exist_ok=True)
 
 # Muscle activation levels (M0, M1, M2)
 M0 = 0.3
@@ -27,7 +27,7 @@ muscle_activations = np.array([M0, M1, M2])
 # gamma_static = muscle_activations
 # gamma_dynamic = muscle_activations
 # collateral_input = muscle_activations
-gamma_range = np.arange(0, 1.1, 0.1)
+gamma_range =  np.array([0]) #np.arange(0, 1.1, 0.1)
 
 
 all_simulation_results = []
@@ -47,7 +47,7 @@ total_sim_duration = cumulative_times[-1]
 
 
 # Apply force from 0 N down to -10 N (in z-direction)
-force_vector = np.arange(0,-7.6,-0.1)
+force_vector = np.arange(-1,-1.1,-1)
 
 
 # --- Model Loading and Initialization ---
@@ -200,7 +200,7 @@ with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui
                         # data.qfrc_applied[:] = applied_force
                 
                         collateral_input = np.clip(muscle_activations + Ia_a + II_a, 0, 1)  # Update collateral input based on Ia and II feedback
-                        data.ctrl[:] = np.clip(muscle_activations + Ia_a + II_a, 0, 1)
+                        data.ctrl[:] =  muscle_activations #np.clip(muscle_activations + Ia_a + II_a, 0, 1)
                         mujoco.mj_applyFT(model, data, applied_force, torque, force_location_on_model, body_id, data.qfrc_applied)
 
                     else:
@@ -224,13 +224,22 @@ with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui
                             II_a[m] = II_feedback
 
                         collateral_input = np.clip(muscle_activations + Ia_a + II_a, 0, 1)  # Update collateral input based on Ia and II feedback
-                        data.ctrl[:] =   np.clip(muscle_activations + Ia_a + II_a, 0, 1)
+                        data.ctrl[:] =  muscle_activations #np.clip(muscle_activations + Ia_a + II_a, 0, 1)
                         data.qfrc_applied[:] = 0.0 # No external force
                         applied_force = np.zeros(3)  # Reset applied force to zero
 
-                    # else: # Only muscle activation, no external force
-                    #     data.ctrl[:] = muscle_activations
-                    #     data.qfrc_applied[:] = 0.0
+                        # else: # Only muscle activation, no external force
+                        #     data.ctrl[:] = muscle_activations
+                        #     data.qfrc_applied[:] = 0.0
+
+                        # --- Visualization of Applied Forces ---
+                        # Clear previous user force display
+                    # viewer.user_force_display.clear()
+                    
+                    # # Add the new force vector to the display list
+                    # # The viewer expects a tuple: (body_id, force_vector, force_location)
+                    # if np.linalg.norm(applied_force) > 0.01:  # Only show non-zero forces
+                    #     viewer.user_force_display.append((torso_id, applied_force, force_location_on_model))
 
                     # --- Update the model and data ---
 
@@ -240,46 +249,46 @@ with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui
                     # --- Collect Data for the Current Step ---
                     contact_force = compute_grf.get_ground_reaction_force(model, data, foot_geom_id, floor_geom_id)
 
-                    run_data['external_applied_force'].append(applied_force)
-                    run_data['joint_position'].append(data.qpos.copy())
-                    run_data['joint_velocity'].append(data.qvel.copy())
-                    run_data['com_velocity'].append(data.cvel[torso_id].copy())
-                    run_data['com_position'].append(data.subtree_com[torso_id].copy())
-                    run_data['ground_contact_force'].append(contact_force.copy())
-                    run_data['time'].append(data.time)
-                    run_data['muscle_activation'].append(data.ctrl.copy())
-                    run_data['muscle_length'].append(data.actuator_length.copy())
-                    run_data['muscle_velocity'].append(data.actuator_velocity.copy())
-                    run_data['muscle_force'].append(data.actuator_force.copy())
-                    run_data['Ia_feedback'].append(Ia_a.copy())
-                    run_data['II_feedback'].append(II_a.copy())
+                    # run_data['external_applied_force'].append(applied_force)
+                    # run_data['joint_position'].append(data.qpos.copy())
+                    # run_data['joint_velocity'].append(data.qvel.copy())
+                    # run_data['com_velocity'].append(data.cvel[torso_id].copy())
+                    # run_data['com_position'].append(data.subtree_com[torso_id].copy())
+                    # run_data['ground_contact_force'].append(contact_force.copy())
+                    # run_data['time'].append(data.time)
+                    # run_data['muscle_activation'].append(data.ctrl.copy())
+                    # run_data['muscle_length'].append(data.actuator_length.copy())
+                    # run_data['muscle_velocity'].append(data.actuator_velocity.copy())
+                    # run_data['muscle_force'].append(data.actuator_force.copy())
+                    # run_data['Ia_feedback'].append(Ia_a.copy())
+                    # run_data['II_feedback'].append(II_a.copy())
 
 
                     # syncronize to model real_time simulation
-                    # time_elapsed_real = time.time() - step_start_real_time
-                    # time_to_sleep = model.opt.timestep - time_elapsed_real
-                    # if time_to_sleep > 0:
-                    #     time.sleep(time_to_sleep)
+                    time_elapsed_real = time.time() - step_start_real_time
+                    time_to_sleep = model.opt.timestep - time_elapsed_real
+                    if time_to_sleep > 0:
+                        time.sleep(time_to_sleep)
 
                 # --- End of Simulation Run ---
       
-                base_filename = f"alpha_to_gamma_drive_force_{abs(f):.1f}_gamma_dynamic_{gamma_dyn:.2f}_gamma_static_{gamma_stat:.2f}"
-                    # save each data array to a separate .txt file
-                for data_key, data_list in run_data.items():
-                    if data_key == 'force':
-                        continue
+            #     base_filename = f"alpha_to_gamma_drive_force_{abs(f):.1f}_gamma_dynamic_{gamma_dyn:.2f}_gamma_static_{gamma_stat:.2f}"
+            #         # save each data array to a separate .txt file
+            #     for data_key, data_list in run_data.items():
+            #         if data_key == 'force':
+            #             continue
 
-                    if isinstance(data_list[0], (float, int, np.ndarray)) and np.ndim(data_list[0]) == 0:
-                        data_to_save = np.array(data_list).reshape(-1, 1) 
-                    else:
-                        data_to_save = np.array(data_list)
+            #         if isinstance(data_list[0], (float, int, np.ndarray)) and np.ndim(data_list[0]) == 0:
+            #             data_to_save = np.array(data_list).reshape(-1, 1) 
+            #         else:
+            #             data_to_save = np.array(data_list)
 
-                    file_path = os.path.join(base_data_dir, f"{base_filename}_{data_key}.txt")
-                    np.savetxt(file_path, data_to_save, fmt='%.8f', delimiter='\t') 
-            # print(f"Saved {data_key} to {file_path}")
+            #         file_path = os.path.join(base_data_dir, f"{base_filename}_{data_key}.txt")
+            #         np.savetxt(file_path, data_to_save, fmt='%.8f', delimiter='\t') 
+            # # print(f"Saved {data_key} to {file_path}")
         
-            all_simulation_results.append(run_data)
+            # all_simulation_results.append(run_data)
 
 print("\nAll simulations completed.")
-print(f"Total {len(all_simulation_results)} simulation runs performed.")
-print(f"All data saved to: {base_data_dir}")
+# print(f"Total {len(all_simulation_results)} simulation runs performed.")
+# print(f"All data saved to: {base_data_dir}")
