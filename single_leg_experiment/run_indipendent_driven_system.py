@@ -255,10 +255,10 @@ with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui
 
 
                     # syncronize to model real_time simulation
-                    # time_elapsed_real = time.time() - step_start_real_time
-                    # time_to_sleep = model.opt.timestep - time_elapsed_real
-                    # if time_to_sleep > 0:
-                    #     time.sleep(time_to_sleep)
+                    time_elapsed_real = time.time() - step_start_real_time
+                    time_to_sleep = model.opt.timestep - time_elapsed_real
+                    if time_to_sleep > 0:
+                        time.sleep(time_to_sleep)
 
                 # --- End of Simulation Run ---
 

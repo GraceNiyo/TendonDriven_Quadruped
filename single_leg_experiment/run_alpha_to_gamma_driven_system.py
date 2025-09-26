@@ -20,9 +20,10 @@ path_to_model = '../Working_Folder/single_leg_experiment/single_leg.xml'
 # os.makedirs(base_data_dir, exist_ok=True)
 
 # Muscle activation levels (M0, M1, M2)
-M0 = 0.3
-M1 = 0.1
-M2 = 0.32
+M0 =  0 #0.67 #0.3
+M1 = 0 #0.68 # 0.1
+M2 = 0 # 0.28 #0.32
+ 
 muscle_activations = np.array([M0, M1, M2])
 # gamma_static = muscle_activations
 # gamma_dynamic = muscle_activations
@@ -47,7 +48,7 @@ total_sim_duration = cumulative_times[-1]
 
 
 # Apply force from 0 N down to -10 N (in z-direction)
-force_vector = np.arange(-1,-1.1,-1)
+force_vector = np.arange(-0,-0.1,-0.01)
 
 
 # --- Model Loading and Initialization ---
@@ -89,7 +90,7 @@ if floor_geom_id == -1:
 
 # --- Main Simulation Loop ---
 
-with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui = True) as viewer:
+with mujoco.viewer.launch_passive(model, data, show_left_ui=True, show_right_ui = True) as viewer:
 
     # Set the camera to fixed view if available
     if model.ncam > 0:
