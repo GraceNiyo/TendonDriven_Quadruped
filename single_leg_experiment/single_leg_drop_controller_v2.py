@@ -144,7 +144,7 @@ def run_simulation_batch(xml_path, drop_height=0.1, sim_duration=5.0, init_hold_
                                 actuator_length=data.actuator_length[m],
                                 actuator_velocity=data.actuator_velocity[m],
                                 actuator_lengthrange=model.actuator_lengthrange[m].tolist(),
-                                gamma_dynamic=beta_drive[m],  # Assuming gamma_driven_spindle_model_ accepts these
+                                gamma_dynamic=beta_drive[m],  
                                 gamma_static=beta_drive[m]
                             )
 
@@ -173,9 +173,9 @@ def run_simulation_batch(xml_path, drop_height=0.1, sim_duration=5.0, init_hold_
 
 
                 # Real-time pacing
-                # time_until_next_step = model.opt.timestep - (time.time() - step_start)
-                # if time_until_next_step > 0:
-                #     time.sleep(time_until_next_step)
+                time_until_next_step = model.opt.timestep - (time.time() - step_start)
+                if time_until_next_step > 0:
+                    time.sleep(time_until_next_step)
 
             # Save data for current system type
             if save_data and len(drop_data['joint_position']) > 0:
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     for mass_dict in mass_scenarios:
         total_mass = sum(mass_dict.values())
         folder_name = f"{int(total_mass*1000):03d}mg_Data"  
-        output_dir = os.path.join("../all_data/single_leg_experiment/leg_drop_09_25_2025", folder_name)
+        output_dir = os.path.join("../all_data/single_leg_experiment/leg_drop_10_07_2025_Soft_floor", folder_name)
         
         print(f"\n=== Processing mass scenario: {total_mass} kg ===")
         print(f"Output directory: {output_dir}")
