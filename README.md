@@ -8,7 +8,7 @@ This project investigates how different neural control mechanisms affect quadrup
 | System | Description | Biological Basis |
 |--------|-------------|------------------|
 | **Feedforward** | Pure open-loop control without sensory feedback | Motor programs, learned movements |
-| **Alpha-Gamma Collateral** | Muscle activation drives both contraction and spindle sensitivity | Mammalian alpha-gamma coactivation |
+| **Alpha-Gamma Collateral** | spindle sensitivity scaled by muscle activation via collaterals| alpha-to-gamma collaterals |
 | **Independent Alpha-Gamma** | Separate neural pathways for muscle and spindle control | Theoretical independent control |
 | **Beta Motor Neurons** | Single neurons control both muscle and spindle | Skeletofusimotor neurons |
 
