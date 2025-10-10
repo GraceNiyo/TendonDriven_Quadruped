@@ -2,7 +2,8 @@
 
 A MuJoCo-based simulation framework comparing different motor control strategies for quadruped locomotion with muscle spindle feedback.
 This project investigates how different neural control mechanisms affect quadruped locomotion stability and performance. We compare four biologically-inspired motor control systems:
-
+## Demo Video
+https://github.com/GraceNiyo/TendonDriven_Quadruped/blob/main/quadruped_video_demo.mp4
 ### Control Systems Tested
 
 | System | Description | Biological Basis |
@@ -14,7 +15,7 @@ This project investigates how different neural control mechanisms affect quadrup
 
 ### Key Features
 
-- **Realistic Muscle Spindle Model**: Implements Ia and II afferent responses based on muscle length and velocity
+- **Muscle Spindle Model**: Implements Ia and II afferent responses based on muscle length and velocity
 - **Multiple Experimental Paradigms**: Full quadruped locomotion and single leg drop tests
 - **Real-time Visualization**: Interactive MuJoCo viewer with camera controls
 - **Comprehensive Data Collection**: Joint kinematics, muscle dynamics, ground forces, and sensory feedback
