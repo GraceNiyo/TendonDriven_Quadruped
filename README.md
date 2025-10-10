@@ -2,8 +2,9 @@
 
 A MuJoCo-based simulation framework comparing different motor control strategies for quadruped locomotion with muscle spindle feedback.
 This project investigates how different neural control mechanisms affect quadruped locomotion stability and performance. We compare four biologically-inspired motor control systems:
-* Watch Demo*
+
 [![Watch the demo](https://img.youtube.com/vi/4ji9BXXE7EQ/0.jpg)](https://youtu.be/4ji9BXXE7EQ)
+* Watch Demo *
 
 
 
