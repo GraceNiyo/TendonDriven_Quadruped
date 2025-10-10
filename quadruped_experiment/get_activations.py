@@ -144,7 +144,7 @@ def compute_and_save_activations(model_path, omega, dt, duration_in_seconds,acti
         actuator_moment_values = data.actuator_moment
 
         moment_matrix = fill_actuator_moments(n_muscles, n_joints, actuator_moment_values)
-        print(f"Moment matrix at time step {t}:\n{moment_matrix}")
+        # print(f"Moment matrix at time step {t}:\n{moment_matrix}")
         actuator_moments_transpose = moment_matrix.T
 
         L_t = data.actuator_length
