@@ -5,6 +5,7 @@ import time
 import os
 import compute_model_com_velocity as compute_com_vel
 from spindle_model import gamma_driven_spindle_model_
+import compute_ground_reaction_force as compute_grf
 
 
 path_to_model = "quadruped_experiment/quadruped_ws_onground.xml"
@@ -14,9 +15,39 @@ activation_folder = "../quadruped_activation_data_10_09_2025"
 # Run the simulation with one of the activation files
 model = mujoco.MjModel.from_xml_path(path_to_model)
 data = mujoco.MjData(model)
-torso_id = model.body("body").id
 
-system_types=["feedforward","with_collateral", "no_collateral", "beta"]
+
+body_id = model.body("body").id
+if body_id == -1:
+    print("Error: 'body' body not found in model.")
+    exit()
+
+rbfoot_geom_id = model.geom("rbfoot").id
+if rbfoot_geom_id == -1:
+    print("Error: 'rbfoot' geom not found in model.")
+    exit()
+
+rffoot_geom_id = model.geom("rffoot").id
+if rffoot_geom_id == -1:
+    print("Error: 'rffoot' geom not found in model.")
+    exit()
+
+lbfoot_geom_id = model.geom("lbfoot").id
+if lbfoot_geom_id == -1:
+    print("Error: 'lbfoot' geom not found in model.")
+    exit()
+
+lffoot_geom_id = model.geom("lffoot").id
+if lffoot_geom_id == -1:
+    print("Error: 'lffoot' geom not found in model.")
+    exit()
+
+floor_geom_id = model.geom("floor").id
+if floor_geom_id == -1:
+    print("Error: 'floor' geom not found in model.")
+    exit()
+
+system_types=["feedforward"] #,"with_collateral", "no_collateral", "beta"]
 
 # Set muscle activations 
 omega = 0.7 # 
@@ -31,13 +62,13 @@ spindle_gain = 0.1
 # Simulation parameters
 n_steps = muscle_activation_array.shape[0]
 timestep = model.opt.timestep
-delay_duration = 2.0 # seconds
+delay_duration = 5.0 # seconds
 delay_steps = int(delay_duration / timestep)
 duration  = muscle_activation_array.shape[0]
 
 #  director to save data
-base_data_dir = "../all_data/quadruped_experiment/10_09_2025"
-save_data=False
+base_data_dir = "../all_data/quadruped_experiment/Test_10_13_2025"
+save_data=True
 
 # ============= Control loop ============= #
 with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui=True) as viewer:
@@ -67,6 +98,7 @@ with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui
             'com_position': [],
             'com_velocity': [],
             'ground_contact_force': [],
+            'sensor_data': [],
             'muscle_activation': [],
             'muscle_length': [],
             'muscle_velocity': [],
@@ -87,6 +119,7 @@ with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui
                 data.ctrl[:] = 0.0
                 data.qpos[:] = [-0.0868229, -0.309702, -0.0598717, -0.434487, -0.0598717, -0.434487, -0.0598717, -0.434487, -0.0598717, -0.434487]
                 data.qvel[:] = 0.0
+                mujoco.mj_forward(model, data)
             else:
                 muscle_activation = muscle_activation_array[idx - delay_steps,:]
                 if system_type == "feedforward":
@@ -137,11 +170,19 @@ with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui
             # Collect data
             com_vel = compute_com_vel.compute_model_com_velocity(model, data)
 
+            grf = np.concatenate([
+                compute_grf.get_ground_reaction_force(model, data, rbfoot_geom_id, floor_geom_id),
+                compute_grf.get_ground_reaction_force(model, data, rffoot_geom_id, floor_geom_id),
+                compute_grf.get_ground_reaction_force(model, data, lbfoot_geom_id, floor_geom_id),
+                compute_grf.get_ground_reaction_force(model, data, lffoot_geom_id, floor_geom_id)
+            ])
+
             drop_data['joint_position'].append(data.qpos.copy())
             drop_data['joint_velocity'].append(data.qvel.copy())
             drop_data['com_velocity'].append(com_vel)
-            drop_data['com_position'].append(data.subtree_com[torso_id].copy())
-            drop_data['ground_contact_force'].append(data.sensordata.copy())
+            drop_data['com_position'].append(data.subtree_com[body_id].copy())
+            drop_data['ground_contact_force'].append(grf)
+            drop_data['sensor_data'].append(data.sensordata.copy())
             drop_data['muscle_activation'].append(data.ctrl.copy())
             drop_data['muscle_length'].append(data.actuator_length.copy())
             drop_data['muscle_velocity'].append(data.actuator_velocity.copy())
