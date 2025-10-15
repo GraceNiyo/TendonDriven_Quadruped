@@ -47,7 +47,7 @@ if floor_geom_id == -1:
     print("Error: 'floor' geom not found in model.")
     exit()
 
-system_types=["feedforward"] #,"with_collateral", "no_collateral", "beta"]
+system_types=["feedforward","with_collateral", "no_collateral", "beta"]
 
 # Set muscle activations 
 omega = 0.7 # 
@@ -62,12 +62,12 @@ spindle_gain = 0.1
 # Simulation parameters
 n_steps = muscle_activation_array.shape[0]
 timestep = model.opt.timestep
-delay_duration = 5.0 # seconds
+delay_duration = 2.0 # seconds
 delay_steps = int(delay_duration / timestep)
 duration  = muscle_activation_array.shape[0]
 
 #  director to save data
-base_data_dir = "../all_data/quadruped_experiment/Test_10_13_2025"
+base_data_dir = "../all_data/quadruped_experiment/Very_soft_floor_Data_10cm_compliance_10_14_2025"
 save_data=True
 
 # ============= Control loop ============= #
