@@ -67,8 +67,8 @@ delay_steps = int(delay_duration / timestep)
 duration  = muscle_activation_array.shape[0]
 
 #  director to save data
-base_data_dir = "../all_data/quadruped_experiment/Very_soft_floor_Data_10cm_compliance_10_14_2025"
-save_data=True
+base_data_dir = "../all_data/quadruped_experiment/Very_soft_floor_Data_10cm_compliance_10_14_2025/check"
+save_data=False
 
 # ============= Control loop ============= #
 with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui=True) as viewer:

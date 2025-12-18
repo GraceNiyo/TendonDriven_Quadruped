@@ -232,7 +232,7 @@ if __name__ == "__main__":
     for mass_dict in mass_scenarios:
         total_mass = sum(mass_dict.values())
         folder_name = f"{int(total_mass*1000):03d}mg_Data"  
-        output_dir = os.path.join("../all_data/single_leg_experiment/leg_drop_data_10_18_2025/soft_floor", folder_name)
+        output_dir = os.path.join("../all_data/single_leg_experiment/leg_drop_data_10_18_2025/hard_floor/check", folder_name)
         
         # print(f"\n=== Processing mass scenario: {total_mass} kg ===")
         # print(f"Output directory: {output_dir}")
@@ -246,10 +246,10 @@ if __name__ == "__main__":
             print(f"\n--- Drop Height: {drop_height:.2f} m ---")
             
 
-            non_independent_systems = ["beta", "alpha_gamma_co_activation_with_collateral"] #, "alpha_gamma_co_activation_no_collateral"]
+            non_independent_systems = ["alpha_gamma_co_activation_no_collateral"] #["beta", "alpha_gamma_co_activation_with_collateral", "alpha_gamma_co_activation_no_collateral"]
             if non_independent_systems:
                 run_simulation_batch(new_xml, drop_height=drop_height, base_data_dir=output_dir, 
-                                   system_types=non_independent_systems, save_data=True)
+                                   system_types=non_independent_systems, save_data=False)
             
             # independent_systems = ["independent_with_collateral", "independent_no_collateral"]
             # independent_systems = ["independent_with_collateral"]
