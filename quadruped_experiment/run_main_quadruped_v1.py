@@ -19,6 +19,7 @@ def run_quadruped(
     omega=0.7,
     activation_scaler=5.0,
     delay_duration=2.0,
+    after_sim_delay=2.0,
     base_data_dir="../all_data/quadruped_experiment/Very_soft_floor_Data_10cm_compliance_10_14_2025/check",
     save_data=False,
     gamma_drive=0.1,
@@ -76,6 +77,7 @@ def run_quadruped(
     # Simulation parameters
     timestep = model.opt.timestep
     delay_steps = int(delay_duration / timestep)
+    after_sim_delay_steps = int(after_sim_delay / timestep)
     duration = muscle_activation_array.shape[0]
 
     # directory to save data
@@ -83,7 +85,7 @@ def run_quadruped(
         os.makedirs(base_data_dir, exist_ok=True)
 
     # ============= Control loop ============= #
-    with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui=True) as viewer:
+    with mujoco.viewer.launch_passive(model, data, show_left_ui=False, show_right_ui=False) as viewer:
 
         if model.ncam > 0:
             viewer.cam.type = mujoco.mjtCamera.mjCAMERA_FIXED
@@ -121,28 +123,28 @@ def run_quadruped(
             II = np.zeros(model.nu)
             Ia = np.zeros(model.nu)
             idx = 0
-
             # Run simulation for current system type
-            while viewer.is_running() and idx - delay_steps < duration:
+            while viewer.is_running() and idx - delay_steps - duration < after_sim_delay_steps:
                 step_start = time.time()
 
                 if idx < delay_steps:
                     data.ctrl[:] = 0.0
-                    data.qpos[:] = [
-                        -0.0868229,
-                        -0.309702,
-                        -0.0598717,
-                        -0.434487,
-                        -0.0598717,
-                        -0.434487,
-                        -0.0598717,
-                        -0.434487,
-                        -0.0598717,
-                        -0.434487,
-                    ]
-                    data.qvel[:] = 0.0
-                    mujoco.mj_forward(model, data)
-                else:
+                    # data.qpos[:] = [
+                    #     -0.102056,
+                    #     -0.308312,
+                    #     -0.0163205,
+                    #     -0.0451933,
+                    #     -0.487662,
+                    #     -0.0804189,
+                    #     -0.398441,
+                    #     -0.0451933,
+                    #     -0.487662,
+                    #     -0.0804189,
+                    #     -0.398441,
+                    # ]
+                    # data.qvel[:] = 0.0
+                    mujoco.mj_step(model, data)
+                elif idx - delay_steps < duration:
                     muscle_activation = muscle_activation_array[idx - delay_steps, :]
 
                     if system_type == "feedforward":
@@ -161,7 +163,7 @@ def run_quadruped(
                             )
 
                     elif system_type == "alpha_gamma_co_activation_no_collateral":
-                        alpha_drive = np.clip(muscle_activation + Ia + II, 0, 1)
+                        alpha_drive = np.clip(muscle_activation + II , 0, 1)
                         data.ctrl[:] = alpha_drive
                         for m in range(model.nu):
                             Ia[m], II[m] = gamma_driven_spindle_model_(
@@ -185,7 +187,7 @@ def run_quadruped(
                             )
 
                     elif system_type == "independent_with_collateral":
-                        alpha_drive = np.clip(muscle_activation + Ia + II, 0, 1)
+                        alpha_drive = np.clip(muscle_activation + Ia + II , 0, 1)
                         data.ctrl[:] = alpha_drive
                         for m in range(model.nu):
                             Ia[m], II[m] = gamma_driven_spindle_model_(
@@ -208,6 +210,10 @@ def run_quadruped(
                                 gamma_static=gamma_drive,
                             )
 
+                    mujoco.mj_step(model, data)
+                else:
+                    # After simulation delay phase - remove activations
+                    data.ctrl[:] = 0.0
                     mujoco.mj_step(model, data)
 
                 # Update viewer
@@ -246,15 +252,15 @@ def run_quadruped(
 
                 idx += 1
 
-                if idx - delay_steps >= duration:
-                    print(f"Completed {system_type} simulation")
+                if idx - delay_steps - duration >= after_sim_delay_steps:
+                    print(f"Completed {system_type} simulation with after-sim delay")
                     break
 
             # Save data for current system type
             if save_data:
                 print(f"Saving data for {system_type}...")
                 if "independent" in system_type:
-                    filename = f"{system_type}_omega_{omega}_gamma_drive_{gamma_drive}"
+                    filename = f"{system_type}_omega_{omega}_gamma_drive_{gamma_drive:.1f}"
                 else:
                     filename = f"{system_type}_omega_{omega}"
 
@@ -276,13 +282,14 @@ if __name__ == "__main__":
     omega = 0.7
     activation_scaler = 5.0
     delay_duration = 5.0
+    after_sim_delay = delay_duration
 
-    base_data_dir = "../all_data/quadruped_experiment/quadruped_experiment_01_22_2026/soft_floor"
-    save_data = True
+    base_data_dir = "../all_data/quadruped_experiment/quadruped_experiment_02_05_2026/hard_floor/II_only"
+    save_data = False
 
     
     # non_independent_systems = ["feedforward","beta", "alpha_gamma_co_activation_with_collateral", "alpha_gamma_co_activation_no_collateral"]
-    non_independent_systems = ["alpha_gamma_co_activation_no_collateral"]
+    non_independent_systems = ["beta"]
     # non_independent_systems = []
 
     # independent_systems = ["independent_with_collateral", "independent_no_collateral"]
@@ -290,7 +297,7 @@ if __name__ == "__main__":
     independent_systems = []
 
     # Gamma activation level
-    gamma_drives = np.arange(0.1, 1, 0.1)  # e.g.,  np.array([0.8])
+    gamma_drives = np.arange(1, -0.1, -0.1)  # e.g.,  np.array([0.8])
 
     # ---- Run non-independent systems (no gamma needed) ----
     if non_independent_systems:
@@ -300,6 +307,7 @@ if __name__ == "__main__":
             omega=omega,
             activation_scaler=activation_scaler,
             delay_duration=delay_duration,
+            after_sim_delay=after_sim_delay,
             base_data_dir=base_data_dir,
             save_data=save_data,
             system_types=non_independent_systems,
@@ -320,6 +328,7 @@ if __name__ == "__main__":
                 omega=omega,
                 activation_scaler=activation_scaler,
                 delay_duration=delay_duration,
+                after_sim_delay=after_sim_delay,
                 base_data_dir=base_data_dir,
                 save_data=save_data,
                 gamma_drive=float(gamma_drive),

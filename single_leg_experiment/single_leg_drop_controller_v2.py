@@ -38,7 +38,7 @@ def modify_and_save_model(xml_path, mass_dict, output_dir):
 # ============= Control loop ============= #
 
 def run_simulation_batch(xml_path, drop_height=0.1, sim_duration=5.0, init_hold_time=2.0,
-                        muscle_activation=[0.2, 0.14, 0.14], system_types=["beta","alpha_gamma_co_activation_with_collateral","alpha_gamma_co_activation_no_collateral","independent_with_collateral","independent_no_collateral"],
+                        muscle_activation=[0.2, 0.14, 0.14], system_types=["beta","alpha_gamma_co_activation_with_collateral","alpha_gamma_co_activation_no_collateral","independent_with_collateral","independent_no_collateral","feedforward"],
                         save_data=True, gamma_drive = 1.0, base_data_dir="./sim_data"):
     
     print(f"Running batch simulation for all system types")
@@ -168,6 +168,9 @@ def run_simulation_batch(xml_path, drop_height=0.1, sim_duration=5.0, init_hold_
                                 gamma_static=gamma_drive   
                             )
 
+                    elif system_type == "feedforward":
+                        data.ctrl[:] = muscle_activation
+
                     mujoco.mj_step(model, data)
 
                 # Update viewer
@@ -222,17 +225,17 @@ if __name__ == "__main__":
     xml_template = "../Working_Folder/single_leg_experiment/single_leg.xml"
     mass_scenarios = [
         {"torso": 0.125, "RB_HIP": 0.03125, "rbthigh": 0.03125, "RB_KNEE": 0.03125, "rbshin": 0.03125},
-        # {"torso": 0.25, "RB_HIP": 0.0625, "rbthigh": 0.0625, "RB_KNEE": 0.0625, "rbshin": 0.0625},
-        # {"torso": 0.375, "RB_HIP": 0.09375, "rbthigh": 0.09375, "RB_KNEE": 0.09375, "rbshin": 0.09375},
-        # {"torso": 0.5, "RB_HIP": 0.125, "rbthigh": 0.125, "RB_KNEE": 0.125, "rbshin": 0.125}
+        {"torso": 0.25, "RB_HIP": 0.0625, "rbthigh": 0.0625, "RB_KNEE": 0.0625, "rbshin": 0.0625},
+        {"torso": 0.375, "RB_HIP": 0.09375, "rbthigh": 0.09375, "RB_KNEE": 0.09375, "rbshin": 0.09375},
+        {"torso": 0.5, "RB_HIP": 0.125, "rbthigh": 0.125, "RB_KNEE": 0.125, "rbshin": 0.125}
     ]
-    drop_heights = np.arange(0.00, 0.05, 0.05)  # m above the ground
-    gamma_drives = np.arange(0.1, 0.1, 0.1)  
+    drop_heights = np.arange(0.00, 0.55, 0.05)  # m above the ground
+    gamma_drives = np.arange(1.0, 0, -0.1)  
     
     for mass_dict in mass_scenarios:
         total_mass = sum(mass_dict.values())
         folder_name = f"{int(total_mass*1000):03d}mg_Data"  
-        output_dir = os.path.join("../all_data/single_leg_experiment/testFolder", folder_name)
+        output_dir = os.path.join("../all_data/single_leg_experiment/leg_drop_data_02_24_2026", folder_name)
         
         # print(f"\n=== Processing mass scenario: {total_mass} kg ===")
         # print(f"Output directory: {output_dir}")
@@ -246,15 +249,16 @@ if __name__ == "__main__":
             print(f"\n--- Drop Height: {drop_height:.2f} m ---")
             
 
-            non_independent_systems = ["beta"] #["beta", "alpha_gamma_co_activation_with_collateral", "alpha_gamma_co_activation_no_collateral"]
-            if non_independent_systems:
+            non_independent_systems = ["beta","alpha_gamma_co_activation_with_collateral", "alpha_gamma_co_activation_no_collateral","feedforward"]
+            for system_type in non_independent_systems:
                 run_simulation_batch(new_xml, drop_height=drop_height, base_data_dir=output_dir, 
-                                   system_types=non_independent_systems, save_data=True)
+                                   system_types=[system_type], save_data=True, sim_duration=5.0)
             
-            # independent_systems = ["independent_with_collateral", "independent_no_collateral"]
+            # independent_systems = ["independent_with_collateral"] #, "independent_no_collateral"]
             # independent_systems = ["independent_with_collateral"]
-
-            # for gamma_drive in gamma_drives:
-            #     print(f"  Spindle Gain: {gamma_drive}")
-            #     run_simulation_batch(new_xml, drop_height=drop_height, base_data_dir=output_dir,
-            #                        system_types=independent_systems, gamma_drive=gamma_drive,save_data=True)
+            
+            # for system_type in independent_systems:
+            #     for gamma_drive in gamma_drives:
+            #         print(f"  Spindle Gain: {gamma_drive}")
+            #         run_simulation_batch(new_xml, drop_height=drop_height, base_data_dir=output_dir,
+            #                             system_types=[system_type], gamma_drive=gamma_drive,save_data=True, sim_duration=5.0)

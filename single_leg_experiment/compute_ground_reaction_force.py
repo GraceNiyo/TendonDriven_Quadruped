@@ -29,13 +29,7 @@ def get_ground_reaction_force(model, data, foot_geom_id, floor_geom_id):
             
             # Rotate the force from the contact frame to the world frame
             contact_frame_rot = contact.frame.reshape(3, 3)
-            force_in_world = contact_frame_rot.T @ contact_force_buffer[:3]
+            grf_vector = contact_frame_rot @ contact_force_buffer[:3]
             
-            # mj_contactForce calculates force of geom1 on geom2.
-            # We want the force ON the foot.
-            if geom1_is_floor:
-                grf_vector += force_in_world
-            else:
-                grf_vector -= force_in_world
     
     return grf_vector
