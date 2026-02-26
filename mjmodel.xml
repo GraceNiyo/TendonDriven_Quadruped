@@ -1,0 +1,93 @@
+<mujoco model="unit monopod model">
+  <!-- defaults -->
+  <compiler angle="radian"/>
+
+  <option timestep="0.001" integrator="implicitfast"/>
+
+  <size nstack="300000" nuser_geom="1"/>
+
+  <default>
+    <joint solimplimit="0 0.8 0.03" stiffness="8" limited="true" armature="0.1" damping="0.01"/>
+    <geom conaffinity="0" rgba="0.8 0.6 0.4 1"/>
+    <general ctrllimited="true" ctrlrange="0 1" dyntype="muscle" dynprm="0.01 0.04 0 0 0 0 0 0 0 0" gaintype="muscle" biastype="muscle" gainprm="0.75 1.05 -1 200 0.5 1.6 1.5 1.3 1.2" biasprm="0.75 1.05 -1 200 0.5 1.6 1.5 1.3 1.2"/>
+  </default>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="1 1 1" rgb2="0 0 0" width="100" height="600"/>
+    <texture type="cube" name="texgeom" builtin="flat" mark="cross" rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" markrgb="1 1 1" width="127" height="762"/>
+    <texture type="2d" name="texplane" builtin="flat" rgb1="0.4 0.26 0.16" width="100" height="100"/>
+    <material name="MatPlane" texture="texplane" specular="1" shininess="1"/>
+    <material name="geom" texture="texgeom" texuniform="true"/>
+  </asset>
+
+  <worldbody>
+    <geom name="floor" size="25.1984 25.1984 25.1984" type="plane" conaffinity="1" solref="0.05" solimp="0" material="MatPlane" rgba="0.8 0.8 0.8 1"/>
+    <camera name="world_cam" pos="-0.605 -3.986 0.399" quat="0.738905 0.669601 -0.05049 -0.0557157"/>
+    <light pos="0 0 1.3" dir="0 0 -1" directional="true" cutoff="100" exponent="1" diffuse="1 1 1" specular="0.1 0.1 0.1"/>
+    <body name="torso" pos="0 0 0.31498">
+      <joint name="rootx" pos="-0.31498 -0.15749 0.125992" axis="1 0 0" type="slide" stiffness="0" limited="false" armature="0" damping="0"/>
+      <joint name="rootz" pos="-0.31498 -0.15749 0.125992" axis="0 0 1" type="slide" stiffness="0" limited="false" armature="0" damping="0"/>
+      <joint name="rootyrot" pos="-0.31498 -0.15749 0.125992" axis="0 1 0" stiffness="1.5" range="-1.5 1.5" armature="0" damping="1"/>
+      <geom name="torso" size="0.125992 0.0629961 0.031498" pos="-0.31498 -0.15749 0.125992" type="box" mass="0.125"/>
+      <site name="SITE_RB_0" pos="-0.220486 -0.15749 0.15749" size="0.00629961"/>
+      <site name="SITE_RB_1" pos="-0.409474 -0.15749 0.0944941" size="0.00629961"/>
+      <site name="SITE_RB_2" pos="-0.220486 -0.15749 0.0944941" size="0.00629961"/>
+      <camera name="track" pos="0 -3 0.3" quat="0.707107 0.707107 0 0" mode="trackcom"/>
+      <body name="rbthigh" pos="-0.31498 -0.15749 0">
+        <joint name="rbthigh" pos="0 0 0" axis="0 1 0" stiffness="1" range="-1 0.7" damping="1.5"/>
+        <geom name="RB_HIP" size="0.047247 0.031498" quat="0.707107 -0.707107 0 0" type="cylinder" mass="0.03125" rgba="1 1 1 0.5"/>
+        <geom name="rbthigh" size="0.02833 0.08191" pos="-0.0440972 0 -0.0755953" quat="0.96639 0 0.257081 0" type="capsule" mass="0.03125"/>
+        <site name="SIDESITE_RB_0" pos="-0.0661459 0 0.0742723" size="0.00629961" group="1" rgba="0.7 0.8 0.95 0.8"/>
+        <site name="SIDESITE_RB_1" pos="0.0976439 0 -0.0195918" size="0.00629961" group="1" rgba="0.7 0.8 0.95 0.8"/>
+        <site name="SITE_RB_3" pos="0.000755953 0 -0.0621141" size="0.00629961"/>
+        <site name="SITE_RB_4" pos="-0.0831548 0 -0.0446012" size="0.00629961"/>
+        <site name="SITE_RB_5" pos="-0.0416404 0 -0.0726974" size="0.00629961"/>
+        <body name="rbshin" pos="-0.0881945 0 -0.151191">
+          <joint name="rbshin" pos="0 0 0" axis="0 1 0" stiffness="1" range="-1.2 0.87" damping="1"/>
+          <geom name="RB_KNEE" size="0.047247 0.031498" quat="0.707107 -0.707107 0 0" type="cylinder" mass="0.03125" rgba="1 1 1 0.5"/>
+          <geom name="rbshin" size="0.02383 0.05491" pos="0.0409474 0 -0.0566964" quat="0.955337 0 -0.29552 0" type="capsule" mass="0.03125" rgba="0.9 0.6 0.6 1"/>
+          <site name="SIDESITE_RB_2" pos="-0.0779891 0 -0.0533577" size="0.00629961" group="1" rgba="0.7 0.8 0.95 0.8"/>
+          <site name="SIDESITE_RB_3" pos="0.0779891 0 0.0533577" size="0.00629961" group="1" rgba="0.7 0.8 0.95 0.8"/>
+          <site name="SITE_RB_6" pos="0.00422074 0 -0.0619881" size="0.00629961"/>
+          <site name="SITE_RB_7" pos="0.0562555 0 -0.0263953" size="0.00629961"/>
+          <body name="rbfoot" pos="0.0881945 0 -0.125992">
+            <geom name="rbfoot" size="0.015749" conaffinity="1" solimp="0 0.95 0.005" mass="0.0001" rgba="0.9 0.3 0.3 1"/>
+            <site name="rbfoot_touch_sensor_site" pos="0 0 0" quat="0.955337 0 -0.29552 0" size="0.0251984 0.00629961" type="capsule" rgba="0 1 0 0.1"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <tendon>
+    <spatial name="T_RB_M0" width="0.006" rgba="0.55 0.78 0.55 1">
+      <site site="SITE_RB_0"/>
+      <geom geom="RB_HIP" sidesite="SIDESITE_RB_0"/>
+      <site site="SITE_RB_5"/>
+      <geom geom="RB_KNEE" sidesite="SIDESITE_RB_3"/>
+      <site site="SITE_RB_7"/>
+    </spatial>
+    <spatial name="T_RB_M1" width="0.006" rgba="0.95 0.5 0.47 1">
+      <site site="SITE_RB_1"/>
+      <geom geom="RB_HIP" sidesite="SIDESITE_RB_1"/>
+      <site site="SITE_RB_3"/>
+    </spatial>
+    <spatial name="T_RB_M2" width="0.006" rgba="0.45 0.49 0.83 1">
+      <site site="SITE_RB_2"/>
+      <geom geom="RB_HIP" sidesite="SIDESITE_RB_0"/>
+      <site site="SITE_RB_4"/>
+      <geom geom="RB_KNEE" sidesite="SIDESITE_RB_2"/>
+      <site site="SITE_RB_6"/>
+    </spatial>
+  </tendon>
+
+  <actuator>
+    <general name="T_RB_M0" tendon="T_RB_M0" lengthrange="0.289501 0.484145" gainprm="0.5 1.5 39.685 200 0.5 1.5 1.6" biasprm="0.5 1.5 39.685 200 0.5 1.5 1.6"/>
+    <general name="T_RB_M1" tendon="T_RB_M1" lengthrange="0.211802 0.293567" gainprm="0.5 1.5 39.685 200 0.5 1.5 1.6" biasprm="0.5 1.5 39.685 200 0.5 1.5 1.6"/>
+    <general name="T_RB_M2" tendon="T_RB_M2" lengthrange="0.36274 0.54398" gainprm="0.5 1.5 99.2126 200 0.5 1.5 1.6" biasprm="0.5 1.5 99.2126 200 0.5 1.5 1.6"/>
+  </actuator>
+
+  <sensor>
+    <touch site="rbfoot_touch_sensor_site" name="rbfoot_touch_sensor"/>
+  </sensor>
+</mujoco>
