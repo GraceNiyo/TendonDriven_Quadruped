@@ -9,7 +9,7 @@ from spindle_model import gamma_driven_spindle_model_
 import compute_ground_reaction_force as compute_grf
 
 
-path_to_model = "quadruped_experiment/quadruped_ws_onground.xml"
+path_to_model = "quadruped_experiment/unit_quadruped_onground.xml"
 activation_folder = "../quadruped_activation_data_10_09_2025"
 
 
@@ -129,20 +129,20 @@ def run_quadruped(
 
                 if idx < delay_steps:
                     data.ctrl[:] = 0.0
-                    # data.qpos[:] = [
-                    #     -0.102056,
-                    #     -0.308312,
-                    #     -0.0163205,
-                    #     -0.0451933,
-                    #     -0.487662,
-                    #     -0.0804189,
-                    #     -0.398441,
-                    #     -0.0451933,
-                    #     -0.487662,
-                    #     -0.0804189,
-                    #     -0.398441,
-                    # ]
-                    # data.qvel[:] = 0.0
+                    data.qpos[:] = [
+                        -0.102056,
+                        -0.308312,
+                        -0.0163205,
+                        -0.0451933,
+                        -0.487662,
+                        -0.0804189,
+                        -0.398441,
+                        -0.0451933,
+                        -0.487662,
+                        -0.0804189,
+                        -0.398441,
+                    ]
+                    data.qvel[:] = 0.0
                     mujoco.mj_step(model, data)
                 elif idx - delay_steps < duration:
                     muscle_activation = muscle_activation_array[idx - delay_steps, :]
@@ -151,7 +151,7 @@ def run_quadruped(
                         data.ctrl[:] = muscle_activation
 
                     elif system_type == "alpha_gamma_co_activation_with_collateral":
-                        alpha_drive = muscle_activation + Ia + II
+                        alpha_drive = muscle_activation + II
                         data.ctrl[:] = np.clip(alpha_drive, 0, 1)
                         for m in range(model.nu):
                             Ia[m], II[m] = gamma_driven_spindle_model_(
@@ -163,7 +163,7 @@ def run_quadruped(
                             )
 
                     elif system_type == "alpha_gamma_co_activation_no_collateral":
-                        alpha_drive = np.clip(muscle_activation + II , 0, 1)
+                        alpha_drive = np.clip(muscle_activation + II, 0, 1)
                         data.ctrl[:] = alpha_drive
                         for m in range(model.nu):
                             Ia[m], II[m] = gamma_driven_spindle_model_(
@@ -175,7 +175,7 @@ def run_quadruped(
                             )
 
                     elif system_type == "beta":
-                        beta_drive = np.clip(muscle_activation + Ia + II, 0, 1)
+                        beta_drive = np.clip(muscle_activation + II, 0, 1)
                         data.ctrl[:] = beta_drive
                         for m in range(model.nu):
                             Ia[m], II[m] = gamma_driven_spindle_model_(
@@ -187,7 +187,7 @@ def run_quadruped(
                             )
 
                     elif system_type == "independent_with_collateral":
-                        alpha_drive = np.clip(muscle_activation + Ia + II , 0, 1)
+                        alpha_drive = np.clip(muscle_activation + II, 0, 1)
                         data.ctrl[:] = alpha_drive
                         for m in range(model.nu):
                             Ia[m], II[m] = gamma_driven_spindle_model_(
@@ -199,7 +199,7 @@ def run_quadruped(
                             )
 
                     elif system_type == "independent_no_collateral":
-                        alpha_drive = np.clip(muscle_activation + Ia + II, 0, 1)
+                        alpha_drive = np.clip(muscle_activation + II, 0, 1)
                         data.ctrl[:] = alpha_drive
                         for m in range(model.nu):
                             Ia[m], II[m] = gamma_driven_spindle_model_(
@@ -275,7 +275,7 @@ def run_quadruped(
 # ========================== #
 if __name__ == "__main__":
 
-    path_to_model = "quadruped_experiment/quadruped_ws_onground.xml"
+    path_to_model = "quadruped_experiment/unit_quadruped_onground.xml"
     activation_folder = "../quadruped_activation_data_10_09_2025"
 
     # User-editable parameters
@@ -284,12 +284,12 @@ if __name__ == "__main__":
     delay_duration = 5.0
     after_sim_delay = delay_duration
 
-    base_data_dir = "../all_data/quadruped_experiment/quadruped_experiment_02_05_2026/hard_floor/II_only"
-    save_data = False
+    base_data_dir = "../all_data/quadruped_experiment/quadruped_experiment_03_01_2026/II_only"
+    save_data = True
 
     
-    # non_independent_systems = ["feedforward","beta", "alpha_gamma_co_activation_with_collateral", "alpha_gamma_co_activation_no_collateral"]
-    non_independent_systems = ["beta"]
+    non_independent_systems = ["beta", "alpha_gamma_co_activation_with_collateral", "alpha_gamma_co_activation_no_collateral"]
+    # non_independent_systems = ["feedforward"]
     # non_independent_systems = []
 
     # independent_systems = ["independent_with_collateral", "independent_no_collateral"]
@@ -297,7 +297,7 @@ if __name__ == "__main__":
     independent_systems = []
 
     # Gamma activation level
-    gamma_drives = np.arange(1, -0.1, -0.1)  # e.g.,  np.array([0.8])
+    gamma_drives = np.arange(1, 0.0, -0.1)  # e.g.,  np.array([0.8])
 
     # ---- Run non-independent systems (no gamma needed) ----
     if non_independent_systems:
