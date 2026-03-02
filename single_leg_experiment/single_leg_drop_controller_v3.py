@@ -200,6 +200,7 @@ def run_simulation_batch(xml_path, drop_height=0.1, relative_drop_height=None, s
                 'muscle_force': [],
                 'Ia_feedback': [],
                 'II_feedback': [],
+                'actuator_length_range': [model.actuator_lengthrange[m].tolist() for m in range(model.nu)]
             }
 
             II = np.zeros(model.nu)
@@ -220,7 +221,7 @@ def run_simulation_batch(xml_path, drop_height=0.1, relative_drop_height=None, s
                     data.qvel[:] = 0.0
                     data.qacc[:] = 0.0
                     data.ctrl[:] = muscle_activation
-                    mujoco.mj_forward(model, data)
+                    mujoco.mj_step(model, data)
                 else:
                     if system_type == "alpha_gamma_co_activation_with_collateral":
                         alpha_drive = np.clip(muscle_activation + Ia + II, 0, 1)
@@ -339,22 +340,24 @@ def run_simulation_batch(xml_path, drop_height=0.1, relative_drop_height=None, s
 if __name__ == "__main__":
     xml_template = "../Working_Folder/single_leg_experiment/unit_single_leg.xml"
     # Total mass scenarios (mass distribution calculated automatically)
-    mass_scenarios = [0.25] #, 0.5, 0.75, 1,1.25, 1.5, 1.75, 2.0]
+    mass_scenarios = [0.25, 0.5, 0.75,1,1.25, 1.5, 1.75, 2.0]
     
-    # Relative drop heights as fractions of body length (for L=1.0 reference model)
+    # Relative drop heights as fractions of body length (for L=1.0 reference unit model)
     relative_drop_heights = np.arange(0.00, 0.55, 0.05)  # 0.05, 0.1, 0.15, ... 0.5 body lengths
     
     gamma_drives = np.arange(1.0, 0, -0.1)  
     
     for total_mass in mass_scenarios:
-        # Calculate L factor for this mass to scale drop heights appropriately
-        L = total_mass ** (1/3)
+        # Calculate scaled size (L) this mass to scale drop heights appropriately
+        b = 1/3  # allometric exponent for length scaling
+        a = 1
+        L = a * total_mass ** (b)
         
-        # Scale drop heights by model size (biomechanically equivalent drops)
+        # normalize drop height by body length to maintain constant Froude number across models
         absolute_drop_heights = relative_drop_heights * L
         
-        folder_name = f"{int(total_mass*1000):03d}mg_Data"  
-        output_dir = os.path.join("../all_data/single_leg_experiment/leg_drop_data_02_25_2026_test/checklast", folder_name)
+        folder_name = f"{int(total_mass*1000):03d}g_Data"  
+        output_dir = os.path.join("../all_data/single_leg_experiment/leg_drop_data_02_26_2026", folder_name)
         
         print(f"\n=== Processing mass scenario: {total_mass} kg (L={L:.3f}) ===")
         print(f"Relative drop heights: {relative_drop_heights}")
@@ -371,17 +374,17 @@ if __name__ == "__main__":
             print(f"\n--- Drop Height: {drop_height:.3f} m ({relative_height:.2f} body lengths) ---")
             
 
-            non_independent_systems = ["beta"]#","alpha_gamma_co_activation_with_collateral", "alpha_gamma_co_activation_no_collateral","feedforward"]
-            for system_type in non_independent_systems:
-                run_simulation_batch(new_xml, drop_height=drop_height, relative_drop_height=relative_height, 
-                                   base_data_dir=output_dir, system_types=[system_type], save_data=True, sim_duration=5.0)
+            non_independent_systems = ["beta","alpha_gamma_co_activation_with_collateral", "alpha_gamma_co_activation_no_collateral","feedforward"]
+            # for system_type in non_independent_systems:
+            #     run_simulation_batch(new_xml, drop_height=drop_height, relative_drop_height=relative_height, 
+            #                        base_data_dir=output_dir, system_types=[system_type], save_data=True, sim_duration=5.0,init_hold_time=2.0)
             
-            # independent_systems = ["independent_with_collateral"] #, "independent_no_collateral"]
+            independent_systems = ["independent_with_collateral","independent_no_collateral"]
             # independent_systems = ["independent_with_collateral"]
             
-            # for system_type in independent_systems:
-            #     for gamma_drive in gamma_drives:
-            #         print(f"  Spindle Gain: {gamma_drive}")
-            #         run_simulation_batch(new_xml, drop_height=drop_height, relative_drop_height=relative_height,
-            #                             base_data_dir=output_dir, system_types=[system_type], 
-            #                             gamma_drive=gamma_drive,save_data=True, sim_duration=5.0)
+            for system_type in independent_systems:
+                for gamma_drive in gamma_drives:
+                    print(f"  Spindle Gain: {gamma_drive}")
+                    run_simulation_batch(new_xml, drop_height=drop_height, relative_drop_height=relative_height,
+                                        base_data_dir=output_dir, system_types=[system_type], 
+                                        gamma_drive=gamma_drive,save_data=True, sim_duration=5.0)

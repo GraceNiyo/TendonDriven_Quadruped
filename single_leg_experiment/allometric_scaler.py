@@ -2,7 +2,8 @@
 # Date 2026-02-25
 def allometric_scaler( M, Torsal_p = 0.4, Thigh_p= 0.35, Shin_p = 0.25):
     
-    # Function takes in the mass of the model and the segment proportion. Return the alommetric equivalent size and new parameters for the torso, thigh and shin for MuJoCo modeling. Reference paper:  Lindstedt and Hoppeler (2023), "Allometry: revealing evolution's engineering principles"
+    # Function takes in the mass of the model and the segment proportion. Return the alommetric equivalent size and new parameters for the torso, thigh and shin for MuJoCo modeling. 
+    # Reference paper:  Lindstedt and Hoppeler (2023), "Allometry: revealing evolution's engineering principles"
 
    # Under geometric similarity, the length of a segment (L) scales with body mass (M) to the power of 1/3.
     a = 1
@@ -35,7 +36,6 @@ def allometric_scaler( M, Torsal_p = 0.4, Thigh_p= 0.35, Shin_p = 0.25):
     
     return [L, new_torso_width, round(new_geom_thigh_0, 5), round(new_geom_thigh_1, 5), round(new_geom_shin_0, 5), round(new_geom_shin_1, 5)]
 
-print(allometric_scaler(0.25))
 
 
 
